@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "jsx": "react",
-        "types": ["react", "react-dom"],
+        "types": ["react", "react-dom", "node"],
         "allowJs": false,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,

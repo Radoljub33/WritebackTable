@@ -6,6 +6,8 @@ import "./../style/visual.less";
 export declare class Visual implements IVisual {
     private target;
     private reactRoot;
+    private keysN;
+    private dataN;
     constructor(options: VisualConstructorOptions);
     update(options: VisualUpdateOptions): void;
 }

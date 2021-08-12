@@ -16,14 +16,18 @@
     "bootstrap-icons": "^1.5.0",
     "core-js": "3.2.1",
     "d3": "5.12.0",
+    "mobiscroll": "^3.0.0-beta6",
     "powerbi-visuals-api": "~2.6.1",
     "powerbi-visuals-utils-dataviewutils": "2.2.1",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.1",
+    "react-bootstrap-spinner": "^1.0.0",
     "react-dom": "^17.0.2",
-    "react-router-bootstrap": "^0.25.0"
+    "react-router-bootstrap": "^0.25.0",
+    "react-toastify": "^7.0.4"
   },
   "devDependencies": {
+    "@types/node": "^16.4.10",
     "ts-loader": "6.1.0",
     "tslint": "^5.18.0",
     "tslint-microsoft-contrib": "^6.2.0",

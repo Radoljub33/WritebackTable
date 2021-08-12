@@ -5,10 +5,10 @@
         {
             "resourceId": "rId0",
             "sourceType": 5,
-            "file": "resources/reactCircleCard47CA2C69671C434A97B7FD3E2BE48BBC.pbiviz.json"
+            "file": "resources/writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC.pbiviz.json"
         }
     ],
-    "visual": {"name":"reactCircleCard","displayName":"ReactCircleCard","guid":"reactCircleCard47CA2C69671C434A97B7FD3E2BE48BBC","visualClassName":"Visual","version":"1.0.0","description":"XXY","supportUrl":"https://stackoverflow.com/questions/50432556/cannot-use-jsx-unless-the-jsx-flag-is-provided","gitHubUrl":""},
+    "visual": {"name":"writeBackTable","displayName":"WriteBackTable","guid":"writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC","visualClassName":"Visual","version":"1.0.0","description":"XXY","supportUrl":"https://stackoverflow.com/questions/50432556/cannot-use-jsx-unless-the-jsx-flag-is-provided","gitHubUrl":""},
     "metadata": {
         "pbivizjson": {
             "resourceId": "rId0"
