@@ -18,13 +18,16 @@ export class Table extends React.Component<{}, any> {
       cred_user: '',
       cred_pwd: '',
       serverConfig: props.serverConfig,
-      url: props.requestUrl
+      url: props.requestUrl,
+      sort: {},
+      tables: []
 
     };
   }
 
   lengthHeaders: number = 0;
   cnt: number = 1;
+  allTables: Array<string> = [];
 
   handleChange(index, dataType, value) {
     const newState = this.state.rows.map((item, i) => {
@@ -72,6 +75,13 @@ export class Table extends React.Component<{}, any> {
 
     })
 
+    this.setState({
+      cred_user: '',
+      
+    })
+    this.setState({
+    cred_pwd: '',
+    })
   }
 
   showLogin() {
@@ -92,27 +102,23 @@ export class Table extends React.Component<{}, any> {
     }
   }
 
-  
+
   sortBy(sortCrit) {
-    let objToSort = this.state.header.find(head => head === sortCrit);
-    console.log(objToSort);
+
     let sorter = this.state.sort;
+    if (sorter.direction == 1 && sorter.Crit == sortCrit) {
+      sorter.direction = -1;
+    } else {
+      sorter.direction = 1;
+      sorter.Crit = sortCrit;
 
-    if (objToSort.sortable) {
-      if (sorter.direction == 1 && sorter.Crit == sortCrit) {
-        sorter.direction = -1;
-      } else {
-        sorter.direction = 1;
-        sorter.Crit = sortCrit;
-      }
-      //render
-      this.setState({ rows: [...this.state.rows.sort(this.compareKeys(sortCrit, sorter.direction))] });
-      this.setState({
-        sort: sorter
-      });
-
-      console.log(this.state.rows)
     }
+
+    //render
+    this.setState({ rows: [...this.state.rows.sort(this.compareKeys(sortCrit, sorter.direction))] });
+    this.setState({
+      sort: sorter
+    });
   }
 
 
@@ -128,18 +134,18 @@ export class Table extends React.Component<{}, any> {
 
 
   changeSymbol(key) {
-    console.log(key);
-    if (key !== "_id" && key !== "username") {
-      if (this.state.sort.Crit !== key) {
-        return "bi bi-arrow-down-up";
-      }
-      if (this.state.sort.direction == 1) {
-        return "bi bi-arrow-up";
-      }
-      else {
-        return "bi bi-arrow-down";
-      }
+    let sortObj = this.state.header.find(head => head === key);
+
+    if (this.state.sort.Crit !== sortObj) {
+      return "bi bi-arrow-down-up";
     }
+    if (this.state.sort.direction == 1) {
+      return "bi bi-arrow-up";
+    }
+    else {
+      return "bi bi-arrow-down";
+    }
+
 
   }
 
@@ -162,9 +168,12 @@ export class Table extends React.Component<{}, any> {
     })
   }
 
+  clearInputs() {
+    document.querySelector('input').value = '';
+  }
+
   saveTable() {
     let body = this.state.rows;
-    let value = document.querySelector('input').value
 
     let credUser = this.state.cred_user;
     let credPwd = this.state.cred_pwd;
@@ -172,8 +181,11 @@ export class Table extends React.Component<{}, any> {
     let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');
 
     let match = this.state.serverConfig.split(';');
+    let respMsg = "";
 
-    fetch(`${this.state.url}table/${value}`, {         //DYNAMIC
+    let tableName =  (document.querySelector('#selectTable') as HTMLSelectElement).value;
+
+    fetch(`${this.state.url}table/${tableName}`, {         //DYNAMIC
       //mode: "no-cors",
       method: 'POST',
       body: JSON.stringify(body),
@@ -184,20 +196,29 @@ export class Table extends React.Component<{}, any> {
         "authentification": `${codedAuth}`,
         "serverconfig": `${match[0]}&${match[1]}`
       }
-    }).then(response => { return response.json(); })
-      .then(data => {
-        let jsonData = data;
-        this.searchTable();
-        ToastSuccess("Table saved and synchronized");
-
-      }).catch((e) => {
-        ToastError("Error happened while saving! " + e);
+    })
+      .then(res => {
+        if (!res.ok) {
+          res.text().then(text => {
+            respMsg = (JSON.parse(text)['originalError']['info']['message']);
+            ToastError("ERROR: " + JSON.stringify(respMsg).replace('"', '').substring(0, 70) + " ...");
+          });
+        }
+        else {
+          ToastSuccess("Table saved and synchronized");
+          this.searchTable();
+          return res.json();
+        }
+      })
+      .catch(err => {
+        ToastError("Error happened while saving! ");
 
         this.setState({
           refresh: <i className="bi bi-arrow-repeat"> RETRY</i>
         })
-      })
+      }
 
+      )
     return null;
   }
 
@@ -216,7 +237,6 @@ export class Table extends React.Component<{}, any> {
     let match = this.state.serverConfig.split(';');
 
     fetch(`${this.state.url}login`, {         //DYNAMIC
-      //mode: "no-cors",
       method: 'GET',
       headers: {
         "Accept": "application/json",
@@ -229,6 +249,7 @@ export class Table extends React.Component<{}, any> {
       .then(data => {
         if (data == 200) {
           this.cnt = 0;
+          this.loadTables(codedAuth, match[0], match[1]);
           this.forceUpdate();
           ToastSuccess("Successfully logged in with user: " + this.state.cred_user)
         } else {
@@ -245,20 +266,61 @@ export class Table extends React.Component<{}, any> {
 
   }
 
+  loadTables(auth, conf1, conf2) {
+    fetch(`${this.state.url}dropTables`, {         //DYNAMIC
+      method: 'GET',
+      headers: {
+        "Accept": "application/json",
+        'content-type': 'application/json',
+        "authentification": `${auth}`,
+        "serverconfig": `${conf1}&${conf2}`
+      }
+    })
+      .then(response => { return response.json() })
+      .then(data => {
+        let jsonTables = data;
+
+        let tableValues = [];
+        for (let i = 0; i < jsonTables.length; i++) {
+          tableValues[i] = (Object.values(jsonTables[i])[0]);
+        }
+
+        this.allTables.push(...tableValues);
+        this.setState({
+          tables: tableValues
+        });
+
+      }).catch((err) => {
+        console.log(err);
+      })
+
+  }
+  showSort() {
+    this.forceUpdate();
+    this.cnt = 3;
+  }
+
+  backtoStart() {
+    this.forceUpdate();
+    this.cnt = 0;
+  }
+
+
+
   searchTable() {
     this.setState({
       refresh: <i><Spinner animation="border" size="sm" />  LOADING</i>
     })
     this.cleanState();
-    let value = document.querySelector('input').value
+    let tableName =  (document.querySelector('#selectTable') as HTMLSelectElement).value;
+
     let credUser = this.state.cred_user;
     let credPwd = this.state.cred_pwd;
-    let msg;
     let credentials = credUser + ":" + credPwd;
     let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');
     let match = this.state.serverConfig.split(';');
 
-    fetch(`https://192.168.68.65:8090/getTable/${value}`, {         //DYNAMIC
+    fetch(`https://192.168.68.65:8090/getTable/${tableName}`, {         //DYNAMIC
       method: 'GET',
       headers: {
         "Accept": "application/json",
@@ -266,8 +328,7 @@ export class Table extends React.Component<{}, any> {
         "authentification": `${codedAuth}`,
         "serverconfig": `${match[0]}&${match[1]}`
       }
-    })
-      .then(response => { return response.json() })
+    }).then(response => { return response.json() })
       .then(data => {
         let jsonData = data;
         let arr = jsonData['recordsets'];
@@ -301,38 +362,54 @@ export class Table extends React.Component<{}, any> {
   //Quelle Scroll to top/bottom https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
 
   render() {
-   
+
     if (this.cnt == 0) {
       return (
         <div id="table-wrapper">
           <ToastContainer></ToastContainer>
           <p className="p">
-            <button className="btn btn-light" onClick={() => { this.saveTable() }}><i className="bi bi-check-circle"> SAVE</i></button><span> </span>
+            <button className="btn btn-success" onClick={() => { this.saveTable() }}>
+              <i className="bi bi-check-circle"> SAVE</i>
+            </button>
+            <span> </span>
+            <button className="btn tbn-sm btn-secondary" onClick={() => { this.searchTable() }}>{this.state.refresh}</button>
+            <span> </span>
             <button className="btn btn-light" onClick={() => {
               this.addRow()
-
-              //scroll to bottom o
               var element = document.getElementById("table-wrapper");
               element.scrollIntoView(false);
-
-            }}><i className="bi bi-plus-circle"> ROW</i></button><span> </span>
-            <button disabled={true} className="btn btn-light" onClick={() => {
+            }}>
+              <i className="bi bi-plus-circle"> ROW</i>
+            </button>
+            <span> </span>
+            <button disabled={false} className="btn btn-light" onClick={() => {
               let value = document.querySelector('input').value
               this.handleChangeHeader(1, value.trim());
               this.handleChange(this.lengthHeaders, value.trim(), "");
-            }}><i className="bi bi-plus-circle"> COLUMN</i></button><span> </span>
-
-            <button className="btn tbn-sm btn-success" onClick={() => { this.searchTable() }}>{this.state.refresh}</button>
-            <span> </span>
+            }}>
+              <i className="bi bi-plus-circle"> COLUMN</i>
+            </button>
+            <select id="selectTable" className="form-select" aria-label="Default select example">
+              {this.allTables.map( u => (
+                <option key={u} value={u}>{u}</option>
+              )) }
+            </select>
+            
+          <span></span>
+	 
             <button className="btn tbn-sm btn-warning" onClick={() => { this.showLogin() }}><i className="bi bi-box-arrow-in-right"></i> SHOW LOGIN</button>
             <span> </span>
             <button className="btn tbn-sm btn-warning" onClick={() => { this.showHelp() }}><i className="bi bi-question-circle"></i> SHOW HELP</button>
             <span> </span>
-            <input className="inputField" name="inputSpalte" ></input></p>
+            <input className="inputField" name="inputSpalte" id="inputSpalte" ></input></p>
+
+          <button ></button>
+          <span></span>
 
           <br></br>
           <br></br>
           <br></br>
+
           <div className="table-responsive">
 
             <table id="table-scroll" className="table table-hover table-striped table-sm table-bordered">
@@ -341,9 +418,13 @@ export class Table extends React.Component<{}, any> {
                   {this.state.header.map((row, index) => {
                     this.lengthHeaders++;
                     return (
-                      <th>
+                      <th key={this.state.header[index]} scope="col" onClick={() => { this.sortBy(this.state.header[index]) }}>
                         <h5>
-                          <span>{this.state.header[index]}</span>
+                          <span className='sortable-column-label'>{this.state.header[index]}</span>
+                          <span> </span>
+                          <span className='sortable-column-symbol'>
+                            <i className={this.changeSymbol(this.state.header[index])}></i>
+                          </span>
                         </h5>
                       </th>
                     );
@@ -392,6 +473,7 @@ export class Table extends React.Component<{}, any> {
             <h3>Log in with your SQL-Credentials:</h3>
             <label className="lg">SQL-Username: </label><span> </span><input className="pr" name="un" ></input>
             <br></br>
+            <br></br>
             <label className="lg">SQL-Password: </label><span>  </span><input className="pr" name="pw" id="pwd" type="password"></input>
             <br></br>
             <br></br>
@@ -400,6 +482,8 @@ export class Table extends React.Component<{}, any> {
           <br></br>
           <br></br>
         </div>
+
+
       );
     } else {
       return (
@@ -454,3 +538,4 @@ export class Table extends React.Component<{}, any> {
 
   }
 }
+
