@@ -374,6 +374,18 @@ export class Table extends React.Component<{}, any> {
             <span> </span>
             <button className="btn tbn-sm btn-secondary" onClick={() => { this.searchTable() }}>{this.state.refresh}</button>
             <span> </span>
+            <select id="selectTable" className="form-select" aria-label="Default select example">
+              {this.allTables.map( u => (
+                <option key={u} value={u}>{u}</option>
+              )) }
+            </select>
+            <span> </span>
+            <span> </span>
+         
+            <button className="btn tbn-sm btn-warning" id="questMark" onClick={() => { this.showHelp() }}><i className="bi bi-question-circle"></i></button>
+            <span> </span>
+            <span> </span>
+          
             <button className="btn btn-light" onClick={() => {
               this.addRow()
               var element = document.getElementById("table-wrapper");
@@ -388,20 +400,10 @@ export class Table extends React.Component<{}, any> {
               this.handleChange(this.lengthHeaders, value.trim(), "");
             }}>
               <i className="bi bi-plus-circle"> COLUMN</i>
-            </button>
-            <select id="selectTable" className="form-select" aria-label="Default select example">
-              {this.allTables.map( u => (
-                <option key={u} value={u}>{u}</option>
-              )) }
-            </select>
-            
-          <span></span>
-	 
-            <button className="btn tbn-sm btn-warning" onClick={() => { this.showLogin() }}><i className="bi bi-box-arrow-in-right"></i> SHOW LOGIN</button>
+            </button> 
+           
             <span> </span>
-            <button className="btn tbn-sm btn-warning" onClick={() => { this.showHelp() }}><i className="bi bi-question-circle"></i> SHOW HELP</button>
-            <span> </span>
-            <input className="inputField" name="inputSpalte" id="inputSpalte" ></input></p>
+            <input className="inputField" name="inputSpalte" id="inputSpalte" placeholder="column name"></input></p>
 
           <button ></button>
           <span></span>
@@ -477,7 +479,7 @@ export class Table extends React.Component<{}, any> {
             <label className="lg">SQL-Password: </label><span>  </span><input className="pr" name="pw" id="pwd" type="password"></input>
             <br></br>
             <br></br>
-            <button className="btn tbn-sm btn-success" onClick={() => { this.submitLogin() }}> Submit</button></p>
+            <button className="btn tbn-sm btn-success" onClick={() => { this.submitLogin() }}> LOGIN</button></p>
           <br></br>
           <br></br>
           <br></br>
@@ -514,7 +516,6 @@ export class Table extends React.Component<{}, any> {
             <label className="lg">REFRESHES / (RE)LOADS THE TABLE </label><br></br><br></br>
 
             <span> </span>
-            <button className="btn tbn-sm btn-warning" ><i className="bi bi-box-arrow-in-right"></i> SHOW LOGIN</button><span> </span>
             <label className="lg">SHOWS THE LOGIN VIEW FOR SQL-USERS </label><br></br><br></br>
 
             <span> </span>
@@ -538,4 +539,3 @@ export class Table extends React.Component<{}, any> {
 
   }
 }
-
