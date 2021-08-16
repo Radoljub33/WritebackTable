@@ -21,7 +21,6 @@ export class Table extends React.Component<{}, any> {
       url: props.requestUrl,
       sort: {},
       tables: []
-
     };
   }
 
@@ -32,9 +31,10 @@ export class Table extends React.Component<{}, any> {
   handleChange(index, dataType, value) {
     const newState = this.state.rows.map((item, i) => {
       if (i == index) {
-        return { ...item, [dataType]: value }; //neuer wert
+        return { ...item, [dataType]: value };
       }
-      return item; //alter wert
+
+      return item;
     });
 
     this.setState({
@@ -48,39 +48,34 @@ export class Table extends React.Component<{}, any> {
       if (i == index) {
         return { ...item, value };
       }
+
       return item;
     });
 
-    let arr = this.state.header;
-
-    let arr2 = [value];
-
-    let arr3 = arr.concat(arr2);
+    let arr_original = this.state.header;
+    let arr_value = [value];
+    let arr_modified = arr_original.concat(arr_value);
 
     this.setState({
-      header: arr3
-
+      header: arr_modified
     })
-    console.log(this.state.header);
   }
 
   cleanState() {
     this.setState({
       header: []
-
     })
 
     this.setState({
       rows: []
-
     })
 
     this.setState({
       cred_user: '',
-      
     })
+
     this.setState({
-    cred_pwd: '',
+      cred_pwd: '',
     })
   }
 
@@ -102,36 +97,34 @@ export class Table extends React.Component<{}, any> {
     }
   }
 
-
   sortBy(sortCrit) {
-
     let sorter = this.state.sort;
+
     if (sorter.direction == 1 && sorter.Crit == sortCrit) {
       sorter.direction = -1;
     } else {
       sorter.direction = 1;
       sorter.Crit = sortCrit;
-
     }
 
-    //render
-    this.setState({ rows: [...this.state.rows.sort(this.compareKeys(sortCrit, sorter.direction))] });
+    this.setState({
+      rows: [...this.state.rows.sort(this.compareKeys(sortCrit, sorter.direction))]
+    });
+
     this.setState({
       sort: sorter
     });
   }
 
-
   compareKeys(key, direction) {
     if (direction === undefined) {
       direction = 1;
     }
-    //if a > b return 1, else return -1 or 0(equal)
+
     return (a, b) => {
       return (a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0) * direction;
     }
   }
-
 
   changeSymbol(key) {
     let sortObj = this.state.header.find(head => head === key);
@@ -139,14 +132,17 @@ export class Table extends React.Component<{}, any> {
     if (this.state.sort.Crit !== sortObj) {
       return "bi bi-arrow-down-up";
     }
+
     if (this.state.sort.direction == 1) {
       return "bi bi-arrow-up";
-    }
-    else {
+    } else {
       return "bi bi-arrow-down";
     }
+  }
 
-
+  showSort() {
+    this.forceUpdate();
+    this.cnt = 3;
   }
 
   addRow() {
@@ -156,37 +152,33 @@ export class Table extends React.Component<{}, any> {
       myObject[element] = "";
     });
 
-    let arr = this.state.rows;
-
-    let arr2 = [myObject];
-
-    let arr3 = arr.concat(arr2);
+    let arr_original = this.state.rows;
+    let arr_object = [myObject];
+    let arr_modified = arr_original.concat(arr_object);
 
     this.setState({
-      rows: arr3
+      rows: arr_modified
 
     })
   }
 
-  clearInputs() {
-    document.querySelector('input').value = '';
+  addColumn() {
+    let value = document.querySelector('input').value
+    console.log(value);
+    this.handleChangeHeader(4, value.trim());
   }
 
   saveTable() {
     let body = this.state.rows;
-
     let credUser = this.state.cred_user;
     let credPwd = this.state.cred_pwd;
     let credentials = credUser + ":" + credPwd;
     let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');
-
     let match = this.state.serverConfig.split(';');
     let respMsg = "";
+    let tableName = (document.querySelector('#selectTable') as HTMLSelectElement).value;
 
-    let tableName =  (document.querySelector('#selectTable') as HTMLSelectElement).value;
-
-    fetch(`${this.state.url}table/${tableName}`, {         //DYNAMIC
-      //mode: "no-cors",
+    fetch(`${this.state.url}table/${tableName}`, {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {
@@ -203,10 +195,10 @@ export class Table extends React.Component<{}, any> {
             respMsg = (JSON.parse(text)['originalError']['info']['message']);
             ToastError("ERROR: " + JSON.stringify(respMsg).replace('"', '').substring(0, 70) + " ...");
           });
-        }
-        else {
+        } else {
           ToastSuccess("Table saved and synchronized");
           this.searchTable();
+
           return res.json();
         }
       })
@@ -216,39 +208,35 @@ export class Table extends React.Component<{}, any> {
         this.setState({
           refresh: <i className="bi bi-arrow-repeat"> RETRY</i>
         })
-      }
+      })
 
-      )
     return null;
   }
 
   clearInputState() {
     this.setState({
       cred_user: '',
-      
     })
+
     this.setState({
-    cred_pwd: '',
+      cred_pwd: '',
     })
   }
 
   submitLogin() {
-    
     this.setState({
-      cred_user:''
+      cred_user: ''
     })
+
     this.setState({
       cred_pwd: ''
     })
 
     let credentials = (document.querySelector('input').value) + ":" + ((document.querySelector('#pwd') as HTMLInputElement).value);
-
     let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');
     let match = this.state.serverConfig.split(';');
 
-    console.log("creds: " + credentials);
-
-    fetch(`${this.state.url}login`, {         //DYNAMIC
+    fetch(`${this.state.url}login`, {
       method: 'GET',
       headers: {
         "Accept": "application/json",
@@ -259,28 +247,21 @@ export class Table extends React.Component<{}, any> {
     })
       .then(response => { return response })
       .then(data => {
-        console.log(data);
         if (data.status == 200) {
           this.cnt = 0;
-
           this.loadTables(codedAuth, match[0], match[1]);
           this.forceUpdate();
           ToastSuccess("Successfully logged in with user: " + this.state.cred_user)
         } else {
-          //this.cnt = 1;
-         // this.forceUpdate();
           ToastError("Login failed for user: " + this.state.cred_user + " Username or Password incorrect.");
         }
-
       }).catch((e) => {
-        
         ToastError("Login failed for user: " + this.state.cred_user);
       })
-
   }
 
   loadTables(auth, conf1, conf2) {
-    fetch(`${this.state.url}dropTables`, {         //DYNAMIC
+    fetch(`${this.state.url}dropTables`, {
       method: 'GET',
       headers: {
         "Accept": "application/json",
@@ -292,8 +273,8 @@ export class Table extends React.Component<{}, any> {
       .then(response => { return response.json() })
       .then(data => {
         let jsonTables = data;
-
         let tableValues = [];
+
         for (let i = 0; i < jsonTables.length; i++) {
           tableValues[i] = (Object.values(jsonTables[i])[0]);
         }
@@ -302,15 +283,9 @@ export class Table extends React.Component<{}, any> {
         this.setState({
           tables: tableValues
         });
-
       }).catch((err) => {
         console.log(err);
       })
-
-  }
-  showSort() {
-    this.forceUpdate();
-    this.cnt = 3;
   }
 
   backtoStart() {
@@ -318,22 +293,21 @@ export class Table extends React.Component<{}, any> {
     this.cnt = 0;
   }
 
-
-
   searchTable() {
     this.setState({
       refresh: <i><Spinner animation="border" size="sm" />  LOADING</i>
     })
-    this.cleanState();
-    let tableName =  (document.querySelector('#selectTable') as HTMLSelectElement).value;
 
+    this.cleanState();
+
+    let tableName = (document.querySelector('#selectTable') as HTMLSelectElement).value;
     let credUser = this.state.cred_user;
     let credPwd = this.state.cred_pwd;
     let credentials = credUser + ":" + credPwd;
     let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');
     let match = this.state.serverConfig.split(';');
 
-    fetch(`https://192.168.68.65:8090/getTable/${tableName}`, {         //DYNAMIC
+    fetch(`https://192.168.68.65:8090/getTable/${tableName}`, {
       method: 'GET',
       headers: {
         "Accept": "application/json",
@@ -341,26 +315,27 @@ export class Table extends React.Component<{}, any> {
         "authentification": `${codedAuth}`,
         "serverconfig": `${match[0]}&${match[1]}`
       }
-    }).then(response => { return response.json() })
+    })
+      .then(response => { return response.json() })
       .then(data => {
         let jsonData = data;
         let arr = jsonData['recordsets'];
         let jsonArray = arr[0];
-
         let keys = Object.keys(jsonArray[0]);
         let keysN = keys;
         let dataN = jsonArray;
 
         this.setState({
           rows: dataN
-        })
+        });
+
         this.setState({
           header: keysN
         });
 
         this.setState({
           refresh: <i className="bi bi-arrow-repeat"> (RE)LOAD</i>
-        })
+        });
       }).catch((e) => {
         ToastError("AN ERROR HAPPENED WHILE READING! " + e);
 
@@ -368,17 +343,10 @@ export class Table extends React.Component<{}, any> {
           refresh: <i className="bi bi-arrow-repeat"> RETRY</i>
         })
       })
-
-    return null;
   }
 
-  //Quelle Scroll to top/bottom https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
-
   render() {
-    //this.clearInputState();
-    
     if (this.cnt == 0) {
-      
       return (
         <div id="table-wrapper">
           <ToastContainer></ToastContainer>
@@ -390,17 +358,15 @@ export class Table extends React.Component<{}, any> {
             <button className="btn tbn-sm btn-secondary" onClick={() => { this.searchTable() }}>{this.state.refresh}</button>
             <span> </span>
             <select id="selectTable" className="form-select" aria-label="Default select example">
-              {this.allTables.map( u => (
+              {this.allTables.map(u => (
                 <option key={u} value={u}>{u}</option>
-              )) }
+              ))}
             </select>
             <span> </span>
             <span> </span>
-         
             <button className="btn tbn-sm btn-warning" id="questMark" onClick={() => { this.showHelp() }}><i className="bi bi-question-circle"></i></button>
             <span> </span>
             <span> </span>
-          
             <button className="btn btn-light" onClick={() => {
               this.addRow()
               var element = document.getElementById("table-wrapper");
@@ -415,20 +381,16 @@ export class Table extends React.Component<{}, any> {
               this.handleChange(this.lengthHeaders, value.trim(), "");
             }}>
               <i className="bi bi-plus-circle"> COLUMN</i>
-            </button> 
-           
+            </button>
             <span> </span>
-            <input className="inputField" name="inputSpalte" id="inputSpalte" placeholder="column name"></input></p>
-
+            <input className="inputField" name="inputSpalte" id="inputSpalte" placeholder="column name"></input>
+          </p>
           <button ></button>
           <span></span>
-
           <br></br>
           <br></br>
           <br></br>
-
           <div className="table-responsive">
-
             <table id="table-scroll" className="table table-hover table-striped table-sm table-bordered">
               <thead>
                 <tr>
@@ -446,7 +408,6 @@ export class Table extends React.Component<{}, any> {
                       </th>
                     );
                   })}
-
                 </tr>
               </thead>
               <tbody>
@@ -469,19 +430,15 @@ export class Table extends React.Component<{}, any> {
               </tbody>
             </table>
             <button className="btn btn-light" onClick={() => {
-
-              //scroll to top
+              //Quelle: https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
               var element = document.getElementById("table-wrapper");
               element.scrollIntoView(true);
             }}><i className="bi bi-box-arrow-in-up"> BACK TO TOP</i></button><span> </span>
           </div>
         </div>
-
       );
     } else if (this.cnt == 1) {
-      
       return (
-      
         <div id="table-wrapper">
           {this.clearInputState}
           <ToastContainer></ToastContainer>
@@ -502,16 +459,12 @@ export class Table extends React.Component<{}, any> {
           <br></br>
           <br></br>
         </div>
-
-
       );
     } else {
       return (
         <div id="table-wrapper">
           <ToastContainer></ToastContainer>
-
           <p className="p">
-
             <button className="btn tbn-sm btn-warning" onClick={() => { this.showLogin() }}><i className="bi bi-arrow-return-left"> BACK TO TABLE</i></button>
             <span> </span>
             <br></br>
@@ -533,29 +486,18 @@ export class Table extends React.Component<{}, any> {
             <button className="btn btn-secondary">{this.state.refresh}</button><span> </span>
             <label className="lg">REFRESHES / (RE)LOADS THE TABLE </label><br></br><br></br>
 
-            <span> </span> 
-            <br></br>
+            <span> </span>
+            <hr></hr>
             <button className="btn btn-danger">! IMPORTANT !</button><span> </span>
             <label className="lg"><b>PLEASE NOTE: </b>AVOID MULTIPLE OPERATIONS IF ONE OF THEM SHOULD BE: <b>DELETE</b></label><br></br><br></br>
 
             <span> </span>
-
           </p>
           <br></br>
           <br></br>
           <br></br>
-
         </div>
       );
     }
-
-  }
-
-  addColumn() {
-    let value = document.querySelector('input').value
-    console.log(value);
-    this.handleChangeHeader(4, value.trim());
-    return null;
-
   }
 }
