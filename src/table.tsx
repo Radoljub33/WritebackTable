@@ -222,19 +222,31 @@ export class Table extends React.Component<{}, any> {
     return null;
   }
 
-  submitLogin() {
-
+  clearInputState() {
     this.setState({
-      cred_user: document.querySelector('input').value
+      cred_user: '',
+      
     })
     this.setState({
-      cred_pwd: (document.querySelector('#pwd') as HTMLInputElement).value
+    cred_pwd: '',
+    })
+  }
+
+  submitLogin() {
+    
+    this.setState({
+      cred_user:''
+    })
+    this.setState({
+      cred_pwd: ''
     })
 
     let credentials = (document.querySelector('input').value) + ":" + ((document.querySelector('#pwd') as HTMLInputElement).value);
 
     let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');
     let match = this.state.serverConfig.split(';');
+
+    console.log("creds: " + credentials);
 
     fetch(`${this.state.url}login`, {         //DYNAMIC
       method: 'GET',
@@ -245,22 +257,23 @@ export class Table extends React.Component<{}, any> {
         "serverconfig": `${match[0]}&${match[1]}`
       }
     })
-      .then(response => { return response.status })
+      .then(response => { return response })
       .then(data => {
-        if (data == 200) {
+        console.log(data);
+        if (data.status == 200) {
           this.cnt = 0;
+
           this.loadTables(codedAuth, match[0], match[1]);
           this.forceUpdate();
           ToastSuccess("Successfully logged in with user: " + this.state.cred_user)
         } else {
-          this.cnt = 1;
-          this.forceUpdate();
+          //this.cnt = 1;
+         // this.forceUpdate();
           ToastError("Login failed for user: " + this.state.cred_user + " Username or Password incorrect.");
         }
 
       }).catch((e) => {
-        this.cnt = 1;
-        this.forceUpdate();
+        
         ToastError("Login failed for user: " + this.state.cred_user);
       })
 
@@ -362,8 +375,10 @@ export class Table extends React.Component<{}, any> {
   //Quelle Scroll to top/bottom https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
 
   render() {
-
+    //this.clearInputState();
+    
     if (this.cnt == 0) {
+      
       return (
         <div id="table-wrapper">
           <ToastContainer></ToastContainer>
@@ -464,8 +479,11 @@ export class Table extends React.Component<{}, any> {
 
       );
     } else if (this.cnt == 1) {
+      
       return (
+      
         <div id="table-wrapper">
+          {this.clearInputState}
           <ToastContainer></ToastContainer>
           <p className="p">
             <span> </span>
@@ -501,7 +519,7 @@ export class Table extends React.Component<{}, any> {
             <hr></hr>
             <h3>HELP:</h3>
             <br></br>
-            <button className="btn btn-light"><i className="bi bi-check-circle"> SAVE</i></button><span> </span>
+            <button className="btn tbn-sm btn-success"><i className="bi bi-check-circle"> SAVE</i></button><span> </span>
             <label className="lg">SAVES THE TABLE BACKDATABASE</label><br></br><br></br>
             <span></span>
             <button className="btn btn-light"><i className="bi bi-plus-circle"> ROW</i></button><span> </span>
@@ -512,11 +530,13 @@ export class Table extends React.Component<{}, any> {
             <label className="lg">ADDS A COLUMN TO THE TABLE (WITH THE GIVEN NAME) </label><br></br><br></br>
 
             <span> </span>
-            <button className="btn tbn-sm btn-success">{this.state.refresh}</button><span> </span>
+            <button className="btn btn-secondary">{this.state.refresh}</button><span> </span>
             <label className="lg">REFRESHES / (RE)LOADS THE TABLE </label><br></br><br></br>
 
-            <span> </span>
-            <label className="lg">SHOWS THE LOGIN VIEW FOR SQL-USERS </label><br></br><br></br>
+            <span> </span> 
+            <br></br>
+            <button className="btn btn-danger">! IMPORTANT !</button><span> </span>
+            <label className="lg"><b>PLEASE NOTE: </b>AVOID MULTIPLE OPERATIONS IF ONE OF THEM SHOULD BE: <b>DELETE</b></label><br></br><br></br>
 
             <span> </span>
 

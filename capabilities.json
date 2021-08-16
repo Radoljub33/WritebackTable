@@ -1,13 +1,13 @@
 {
     "dataRoles": [
         {
-            "displayName": "Category Data",
-            "name": "category",
-            "kind": "Grouping"
+            "displayName": "Server-URL",
+            "name": "serverutl",
+            "kind": "Measure"
         },
         {
-            "displayName": "Measure Data",
-            "name": "measure",
+            "displayName": "Connection String",
+            "name": "connection",
             "kind": "Measure"
         }
     ],
