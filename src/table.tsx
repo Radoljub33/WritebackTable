@@ -11,23 +11,30 @@ export class Table extends React.Component<{}, any> {
 
   constructor(props) {
     super(props);
-    this.state = {
-      rows: props.data,
-      header: props.header,
-      refresh: <i className="bi bi-arrow-repeat"> (RE)LOAD</i>,
-      cred_user: '',
-      cred_pwd: '',
-      serverConfig: props.serverConfig,
-      url: props.requestUrl,
-      sort: {},
-      tables: []
+    this.state = {                                               //react states for:
+      rows: props.data,                                             //table-rows
+      header: props.header,                                         //table-headers
+      refresh: <i className="bi bi-arrow-repeat"> (RE)LOAD</i>,     //button content
+      cred_user: '',                                                //username
+      cred_pwd: '',                                                 //password
+      serverConfig: props.serverConfig,                             //server configuration
+      url: props.requestUrl,                                        //server url
+      sort: {},                                                     //current sort
+      tables: []                                                    //all tablenames state
     };
   }
 
-  lengthHeaders: number = 0;
-  cnt: number = 1;
-  allTables: Array<string> = [];
+  lengthHeaders: number = 0;                                        //amount of table headers
+  cnt: number = 1;                                                  //index for selected matching visual view
+  allTables: Array<string> = [];                                    //storage for all tablenames 
 
+  /**
+   * updates the rows-state after any change of a field
+   * supports live-time changes while typing
+   * @param index size of current tableheaders
+   * @param dataType inserting key
+   * @param value inserting value
+   */
   handleChange(index, dataType, value) {
     const newState = this.state.rows.map((item, i) => {
       if (i == index) {
@@ -43,6 +50,11 @@ export class Table extends React.Component<{}, any> {
 
   }
 
+  /**
+   * gives the ability to update the tableheaders with a new tableheader
+   * @param index place of tableheader
+   * @param value name of tableheader (key)
+   */
   handleChangeHeader(index, value) {
     const newStateHeader = this.state.header.map((item, i) => {
       if (i == index) {
@@ -52,15 +64,19 @@ export class Table extends React.Component<{}, any> {
       return item;
     });
 
-    let arr_original = this.state.header;
-    let arr_value = [value];
-    let arr_modified = arr_original.concat(arr_value);
+    let arr_original = this.state.header;                 //origin headers
+    let arr_value = [value];                              //new header
+    let arr_modified = arr_original.concat(arr_value);    //modified headers
 
     this.setState({
       header: arr_modified
     })
   }
 
+  /**
+   * function to clear following states: header, rows, cred_user and cred_pwd
+   * is used to reset the data-sets and to secure for instance a logout
+   */
   cleanState() {
     this.setState({
       header: []
@@ -79,6 +95,10 @@ export class Table extends React.Component<{}, any> {
     })
   }
 
+  /**
+   * switches the login view to the table view or resets it to the login view
+   * is used for login purposes
+   */
   showLogin() {
     this.forceUpdate();
     if (this.cnt == 0) {
@@ -88,6 +108,10 @@ export class Table extends React.Component<{}, any> {
     }
   }
 
+  /**
+   * switches the table view to the help-guide view or resets it to the table view
+   * is used for shwing the help-guide and switching it off
+   */
   showHelp() {
     this.forceUpdate();
     if (this.cnt == 0) {
@@ -97,6 +121,11 @@ export class Table extends React.Component<{}, any> {
     }
   }
 
+  /**
+   * sorts the table by overgiven sort criteria (column name)
+   * changes the sorting of the table due to state update
+   * @param sortCrit criteria for sorting
+   */
   sortBy(sortCrit) {
     let sorter = this.state.sort;
 
@@ -116,18 +145,29 @@ export class Table extends React.Component<{}, any> {
     });
   }
 
+  /**
+   * algortihm to compare the values concerning the column name and direction
+   * @param key sort criteria
+   * @param direction index for ascending/descending
+   * @returns an anonym function which compares two values
+   */
   compareKeys(key, direction) {
     if (direction === undefined) {
       direction = 1;
     }
 
     return (a, b) => {
-      return (a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0) * direction;
+      return (a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0) * direction;  //compares two values and returns the size-index
     }
   }
 
+  /**
+   * uses the selected column to change the sort symbol for it
+   * @param key column name
+   * @returns sort symbol depending on the current sort state and direction
+   */
   changeSymbol(key) {
-    let sortObj = this.state.header.find(head => head === key);
+    let sortObj = this.state.header.find(head => head === key);  //stores the header-object which contains the key
 
     if (this.state.sort.Crit !== sortObj) {
       return "bi bi-arrow-down-up";
@@ -140,11 +180,10 @@ export class Table extends React.Component<{}, any> {
     }
   }
 
-  showSort() {
-    this.forceUpdate();
-    this.cnt = 3;
-  }
-
+  /**
+   * ability to add an empty row into an existing table
+   * can be filled with data entered by the user
+   */
   addRow() {
     let myObject = {}
 
@@ -152,9 +191,9 @@ export class Table extends React.Component<{}, any> {
       myObject[element] = "";
     });
 
-    let arr_original = this.state.rows;
-    let arr_object = [myObject];
-    let arr_modified = arr_original.concat(arr_object);
+    let arr_original = this.state.rows;                     //origin rows
+    let arr_object = [myObject];                            //new row
+    let arr_modified = arr_original.concat(arr_object);     //modifed rows
 
     this.setState({
       rows: arr_modified
@@ -162,21 +201,20 @@ export class Table extends React.Component<{}, any> {
     })
   }
 
-  addColumn() {
-    let value = document.querySelector('input').value
-    console.log(value);
-    this.handleChangeHeader(4, value.trim());
-  }
-
+  /**
+   * saves the modified table back to the Microsoft SQL-Server
+   * uses the overgiven credentials, configurations and settings to connect to the Microsoft SQL-Server
+   * after completing the request if displays a Toast which demonstrates a success-case or an error-case
+   */
   saveTable() {
     let body = this.state.rows;
     let credUser = this.state.cred_user;
     let credPwd = this.state.cred_pwd;
     let credentials = credUser + ":" + credPwd;
-    let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');
+    let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');   //encode
     let match = this.state.serverConfig.split(';');
     let respMsg = "";
-    let tableName = (document.querySelector('#selectTable') as HTMLSelectElement).value;
+    let tableName = (document.querySelector('#selectTable') as HTMLSelectElement).value;   //get selected tablename from dropdown
 
     fetch(`${this.state.url}table/${tableName}`, {
       method: 'POST',
@@ -192,12 +230,12 @@ export class Table extends React.Component<{}, any> {
       .then(res => {
         if (!res.ok) {
           res.text().then(text => {
-            respMsg = (JSON.parse(text)['originalError']['info']['message']);
+            respMsg = (JSON.parse(text)['originalError']['info']['message']);   //get the error message from error-object
             ToastError("ERROR: " + JSON.stringify(respMsg).replace('"', '').substring(0, 70) + " ...");
           });
         } else {
           ToastSuccess("Table saved and synchronized");
-          this.searchTable();
+          this.searchTable();     //requesting and reloading table from Microsoft-SQL-Server
 
           return res.json();
         }
@@ -209,10 +247,12 @@ export class Table extends React.Component<{}, any> {
           refresh: <i className="bi bi-arrow-repeat"> RETRY</i>
         })
       })
-
-    return null;
   }
 
+  /**
+   * clears the username and password state 
+   * is used to clear user credentials before any ability to login
+   */
   clearInputState() {
     this.setState({
       cred_user: '',
@@ -223,6 +263,12 @@ export class Table extends React.Component<{}, any> {
     })
   }
 
+  /**
+   * submits the entered login credentials and checks by a plain-login-check if username and password are valid
+   * uses the overgiven credentials, configurations and settings to connect to the Microsoft SQL-Server
+   * after completing the login request if displays a Toast which demonstrates a success-case or an error-case 
+   * in a success-case the visual view is changed to the table-view and loadTables() is called
+   */
   submitLogin() {
     this.setState({
       cred_user: ''
@@ -232,8 +278,8 @@ export class Table extends React.Component<{}, any> {
       cred_pwd: ''
     })
 
-    let credentials = (document.querySelector('input').value) + ":" + ((document.querySelector('#pwd') as HTMLInputElement).value);
-    let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');
+    let credentials = (document.querySelector('input').value) + ":" + ((document.querySelector('#pwd') as HTMLInputElement).value);     //reads and combines username and password from the input-fields
+    let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');   //decode
     let match = this.state.serverConfig.split(';');
 
     fetch(`${this.state.url}login`, {
@@ -247,9 +293,9 @@ export class Table extends React.Component<{}, any> {
     })
       .then(response => { return response })
       .then(data => {
-        if (data.status == 200) {
-          this.cnt = 0;
-          this.loadTables(codedAuth, match[0], match[1]);
+        if (data.status == 200) {   //login success
+          this.cnt = 0;   //change view mode
+          this.loadTables(codedAuth, match[0], match[1]);   //request and show all full tablenames in the dropdown
           this.forceUpdate();
           ToastSuccess("Successfully logged in with user: " + this.state.cred_user)
         } else {
@@ -260,6 +306,15 @@ export class Table extends React.Component<{}, any> {
       })
   }
 
+  /**
+   * ability to show all tables which can be selected and modified in the visual
+   * uses the overgiven credentials, configurations and settings to connect to the Microsoft SQL-Server
+   * requests the full table-names of all tables which are provided by the Microsoft-SQL-Server-Database
+   * fills the dropdown menue with the table-names from the response
+   * @param auth encoded sql credentials
+   * @param conf1 Microsft SQL-Server-URL
+   * @param conf2 Microsft SQL-Server-Databasename
+   */
   loadTables(auth, conf1, conf2) {
     fetch(`${this.state.url}dropTables`, {
       method: 'GET',
@@ -276,31 +331,31 @@ export class Table extends React.Component<{}, any> {
         let tableValues = [];
 
         for (let i = 0; i < jsonTables.length; i++) {
-          tableValues[i] = (Object.values(jsonTables[i])[0]);
+          tableValues[i] = (Object.values(jsonTables[i])[0]);   //parses the data-values from the response
         }
 
         this.allTables.push(...tableValues);
         this.setState({
-          tables: tableValues
+          tables: tableValues     //fills state to fill dropdown
         });
       }).catch((err) => {
         console.log(err);
       })
   }
 
-  backtoStart() {
-    this.forceUpdate();
-    this.cnt = 0;
-  }
-
+  /**
+   * requests the selected table, from the Microsoft SQL-Server and displays the data as a table
+   * uses the overgiven credentials, configurations and settings to connect to the Microsoft SQL-Server
+   * after receiving an response the visual shows a Toast: either an success-case or error-case
+   */
   searchTable() {
     this.setState({
       refresh: <i><Spinner animation="border" size="sm" />  LOADING</i>
     })
 
-    this.cleanState();
+    this.cleanState();    //clean the provided states
 
-    let tableName = (document.querySelector('#selectTable') as HTMLSelectElement).value;
+    let tableName = (document.querySelector('#selectTable') as HTMLSelectElement).value;    //uses the current selected full tablename from the dropdown
     let credUser = this.state.cred_user;
     let credPwd = this.state.cred_pwd;
     let credentials = credUser + ":" + credPwd;
@@ -326,17 +381,18 @@ export class Table extends React.Component<{}, any> {
         let dataN = jsonArray;
 
         this.setState({
-          rows: dataN
+          rows: dataN   //fill state with json-Array from response
         });
 
         this.setState({
-          header: keysN
+          header: keysN //fill state with the tableheaders from response
         });
 
         this.setState({
           refresh: <i className="bi bi-arrow-repeat"> (RE)LOAD</i>
         });
-      }).catch((e) => {
+      })
+      .catch((e) => {
         ToastError("AN ERROR HAPPENED WHILE READING! " + e);
 
         this.setState({
@@ -346,7 +402,7 @@ export class Table extends React.Component<{}, any> {
   }
 
   render() {
-    if (this.cnt == 0) {
+    if (this.cnt == 0) {  //table view
       return (
         <div id="table-wrapper">
           <ToastContainer></ToastContainer>
@@ -368,9 +424,9 @@ export class Table extends React.Component<{}, any> {
             <span> </span>
             <span> </span>
             <button className="btn btn-light" onClick={() => {
-              this.addRow()
+              this.addRow();
               var element = document.getElementById("table-wrapper");
-              element.scrollIntoView(false);
+              element.scrollIntoView(false);    //scroll to table-botton
             }}>
               <i className="bi bi-plus-circle"> ROW</i>
             </button>
@@ -432,12 +488,13 @@ export class Table extends React.Component<{}, any> {
             <button className="btn btn-light" onClick={() => {
               //Quelle: https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
               var element = document.getElementById("table-wrapper");
-              element.scrollIntoView(true);
-            }}><i className="bi bi-box-arrow-in-up"> BACK TO TOP</i></button><span> </span>
+              element.scrollIntoView(true); //scroll to table top
+              }}>
+                <i className="bi bi-box-arrow-in-up"> BACK TO TOP</i></button><span> </span>
           </div>
         </div>
       );
-    } else if (this.cnt == 1) {
+    } else if (this.cnt == 1) { //login view
       return (
         <div id="table-wrapper">
           {this.clearInputState}
@@ -460,7 +517,7 @@ export class Table extends React.Component<{}, any> {
           <br></br>
         </div>
       );
-    } else {
+    } else { //help guide view
       return (
         <div id="table-wrapper">
           <ToastContainer></ToastContainer>
@@ -488,7 +545,7 @@ export class Table extends React.Component<{}, any> {
 
             <span> </span>
             <hr></hr>
-            <button className="btn btn-danger">! IMPORTANT !</button><span> </span>
+            <button className="btn btn-danger">IMPORTANT</button><span> </span>
             <label className="lg"><b>PLEASE NOTE: </b>AVOID MULTIPLE OPERATIONS IF ONE OF THEM SHOULD BE: <b>DELETE</b></label><br></br><br></br>
 
             <span> </span>
@@ -500,4 +557,4 @@ export class Table extends React.Component<{}, any> {
       );
     }
   }
-}
+} 

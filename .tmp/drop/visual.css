@@ -14102,6 +14102,17 @@ p em {
 #table-wrapper {
   overflow: inherit;
 }
+.lg {
+  font-size: 18px;
+  font-weight: normal;
+}
+.sortable-column-label {
+  float: left;
+}
+.sortable-column-symbol {
+  float: right;
+  padding-right: 10px;
+}
 td,
 th {
   text-align: left;
@@ -14148,6 +14159,29 @@ th h5 {
   border: 0;
   height: auto;
   min-height: 20px;
+}
+.form-select {
+  border: none;
+  padding: 5px 20px;
+  width: 25%;
+  height: 15%;
+  text-decoration: none;
+  margin-right: 4px;
+  display: inline-block;
+  font-size: 14px;
+}
+option {
+  border: none;
+  padding: 10px 28px;
+  width: 15%;
+  text-decoration: none;
+  margin-right: 4px;
+  display: inline-block;
+  font-size: 12px;
+}
+#questMark {
+  margin-right: 50px;
+  margin-left: 30px;
 }
 
 
