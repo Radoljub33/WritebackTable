@@ -5,8 +5,8 @@ import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualC
 var powerbiKey: any = "powerbi";
 var powerbi: any = window[powerbiKey];
 
-var writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC: IVisualPlugin = {
-    name: 'writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC',
+var writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC_DEBUG: IVisualPlugin = {
+    name: 'writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC_DEBUG',
     displayName: 'WriteBackTable',
     class: 'Visual',
     apiVersion: '2.6.0',
@@ -23,7 +23,7 @@ var writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC: IVisualPlugin = {
 if (typeof powerbi !== "undefined") {
     powerbi.visuals = powerbi.visuals || {};
     powerbi.visuals.plugins = powerbi.visuals.plugins || {};
-    powerbi.visuals.plugins["writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC"] = writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC;
+    powerbi.visuals.plugins["writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC_DEBUG"] = writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC_DEBUG;
 }
 
-export default writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC;
+export default writeBackTable47CA2C69671C434A97B7FD3E2BE48BBC_DEBUG;

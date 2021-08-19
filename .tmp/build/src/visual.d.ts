@@ -22,7 +22,21 @@ export declare class Visual implements IVisual {
      * @param options
      */
     private call;
+    /**
+     * default provided method to enumerate Visual-Data
+     * @param options EnumerateVisualObjectInstancesOptions
+     * @returns enumerated Objects of settings ans options
+     */
     enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration;
+    /**
+     * default provided method to be called when a update within Microsoft Power BI happens (new Measure, updated values, ...)
+     * @param options nested observer-like behaviour
+     */
     update(options: VisualUpdateOptions): void;
+    /**
+     * default provided method to parse a dataView to VisualSettings
+     * @param dataView from update(options)
+     * @returns parsed VisualSettings
+     */
     private static parseSettings;
 }

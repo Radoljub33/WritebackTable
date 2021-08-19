@@ -20,7 +20,7 @@ export class Table extends React.Component<{}, any> {
       serverConfig: props.serverConfig,                             //server configuration
       url: props.requestUrl,                                        //server url
       sort: {},                                                     //current sort
-      tables: []                                                    //all tablenames state
+      tables: []                                                    //all tablenames state                                           
     };
   }
 
@@ -47,7 +47,7 @@ export class Table extends React.Component<{}, any> {
     this.setState({
       rows: newState
     });
-
+    
   }
 
   /**
@@ -67,10 +67,11 @@ export class Table extends React.Component<{}, any> {
     let arr_original = this.state.header;                 //origin headers
     let arr_value = [value];                              //new header
     let arr_modified = arr_original.concat(arr_value);    //modified headers
-
+    
     this.setState({
       header: arr_modified
     })
+   
   }
 
   /**
@@ -209,16 +210,20 @@ export class Table extends React.Component<{}, any> {
   saveTable() {
     let body = this.state.rows;
     let credUser = this.state.cred_user;
+    console.log(this.state.header);
     let credPwd = this.state.cred_pwd;
     let credentials = credUser + ":" + credPwd;
     let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');   //encode
     let match = this.state.serverConfig.split(';');
     let respMsg = "";
     let tableName = (document.querySelector('#selectTable') as HTMLSelectElement).value;   //get selected tablename from dropdown
+    let reqObject = {
+      "respon": [Buffer.from(JSON.stringify(body), 'ascii').toString('base64')]     //hashed table stored in response object
+    }
 
     fetch(`${this.state.url}table/${tableName}`, {
       method: 'POST',
-      body: JSON.stringify(body),
+      body: JSON.stringify(reqObject),
       headers: {
         "Accept": "application/json",
         'content-type': 'application/json',
@@ -374,7 +379,7 @@ export class Table extends React.Component<{}, any> {
       .then(response => { return response.json() })
       .then(data => {
         let jsonData = data;
-        let arr = jsonData['recordsets'];
+        let arr = JSON.parse(Buffer.from(jsonData['respon'][0], 'base64').toString('ascii'))["recordsets"];
         let jsonArray = arr[0];
         let keys = Object.keys(jsonArray[0]);
         let keysN = keys;
@@ -407,7 +412,7 @@ export class Table extends React.Component<{}, any> {
         <div id="table-wrapper">
           <ToastContainer></ToastContainer>
           <p className="p">
-            <button className="btn btn-success" onClick={() => { this.saveTable() }}>
+            <button className="btn btn-success" id="saveTable" onClick={() => { this.saveTable() }}>
               <i className="bi bi-check-circle"> SAVE</i>
             </button>
             <span> </span>
@@ -435,6 +440,7 @@ export class Table extends React.Component<{}, any> {
               let value = document.querySelector('input').value
               this.handleChangeHeader(1, value.trim());
               this.handleChange(this.lengthHeaders, value.trim(), "");
+              setTimeout(() => {this.saveTable();}, 100);
             }}>
               <i className="bi bi-plus-circle"> COLUMN</i>
             </button>
@@ -489,8 +495,8 @@ export class Table extends React.Component<{}, any> {
               //Quelle: https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
               var element = document.getElementById("table-wrapper");
               element.scrollIntoView(true); //scroll to table top
-              }}>
-                <i className="bi bi-box-arrow-in-up"> BACK TO TOP</i></button><span> </span>
+            }}>
+              <i className="bi bi-box-arrow-in-up"> BACK TO TOP</i></button><span> </span>
           </div>
         </div>
       );
@@ -557,4 +563,4 @@ export class Table extends React.Component<{}, any> {
       );
     }
   }
-} 
+}
