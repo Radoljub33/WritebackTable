@@ -367,7 +367,7 @@ export class Table extends React.Component<{}, any> {
     let codedAuth = Buffer.from(credentials, 'ascii').toString('base64');
     let match = this.state.serverConfig.split(';');
 
-    fetch(`https://192.168.68.65:8090/getTable/${tableName}`, {
+    fetch(`${this.state.url}getTable/${tableName}`, {
       method: 'GET',
       headers: {
         "Accept": "application/json",
@@ -525,9 +525,9 @@ export class Table extends React.Component<{}, any> {
       );
     } else { //help guide view
       return (
-        <div id="table-wrapper">
+        <div className="scrolldiv">
           <ToastContainer></ToastContainer>
-          <p className="p">
+          
             <button className="btn tbn-sm btn-warning" onClick={() => { this.showLogin() }}><i className="bi bi-arrow-return-left"> BACK TO TABLE</i></button>
             <span> </span>
             <br></br>
@@ -555,7 +555,7 @@ export class Table extends React.Component<{}, any> {
             <label className="lg"><b>PLEASE NOTE: </b>AVOID MULTIPLE OPERATIONS IF ONE OF THEM SHOULD BE: <b>DELETE</b></label><br></br><br></br>
 
             <span> </span>
-          </p>
+        
           <br></br>
           <br></br>
           <br></br>
